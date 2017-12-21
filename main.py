@@ -4,6 +4,7 @@ import tensorflow as tf
 import os
 import pprint
 
+# set the hyper parameters
 flags = tf.app.flags
 flags.DEFINE_integer("epoch", 10000, "Number of epochs [10000]")
 flags.DEFINE_integer("batch_size", 128, "The size of batch images [128]")
@@ -23,8 +24,10 @@ pp = pprint.PrettyPrinter()
 
 
 def main(_):
+    # print the setting of the model
     pp.pprint(flags.FLAGS.__flags)
 
+    # create corresponding checkpoint and samples directory
     if not os.path.exists(FLAGS.checkpoint_dir):
         os.makedirs(FLAGS.checkpoint_dir)
     if not os.path.exists(FLAGS.samples_dir):

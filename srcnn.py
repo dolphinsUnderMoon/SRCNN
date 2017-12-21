@@ -19,6 +19,7 @@ class srcnn:
                  checkpoint_dir=None,
                  samples_dir=None):
 
+        # initializing the parameters
         self.sess = sess
         self.is_grayscale = (channel_dim == 1)
         self.input_image_size = input_image_size
@@ -39,24 +40,29 @@ class srcnn:
 
         self.setup()
 
+    # build the model using TF
     def setup(self):
+        # put the input image and output placeholder
         self.input_images = tf.placeholder(tf.float32, [None, self.input_image_size, self.input_image_size,
                                                         self.channel_dim], name='input_images')
         self.ground_truths = tf.placeholder(tf.float32, [None, self.ground_truth_size, self.ground_truth_size,
                                                          self.channel_dim], name='ground_truths')
 
+        # initialize the weights in each layer
         self.weights = {
             'W1': tf.Variable(tf.truncated_normal(shape=[9, 9, 1, 64], mean=0, stddev=1e-3, name='W1')),
             'W2': tf.Variable(tf.truncated_normal(shape=[1, 1, 64, 32], mean=0, stddev=1e-3, name='W2')),
             'W3': tf.Variable(tf.truncated_normal(shape=[5, 5, 32, 1], mean=0, stddev=1e-3, name='W3'))
         }
 
+        # initialize the biases in each layer
         self.biases = {
             'b1': tf.Variable(tf.zeros([64]), name='b1'),
             'b2': tf.Variable(tf.zeros([32]), name='b2'),
             'b3': tf.Variable(tf.zeros([1]), name='b3')
         }
 
+        # set each layer's forward computing
         conv_1 = tf.nn.relu(tf.nn.conv2d(self.input_images, self.weights['W1'], strides=[1, 1, 1, 1],
                                          padding='VALID') + self.biases['b1'])
         conv_2 = tf.nn.relu(tf.nn.conv2d(conv_1, self.weights['W2'], strides=[1, 1, 1, 1],
@@ -77,13 +83,16 @@ class srcnn:
         else:
             nx, ny = input_setup(self.sess, config)
 
+        # set the data source's directory
         if config.is_train:
             data_dir = os.path.join('./{}'.format(config.checkpoint_dir), "train.h5")
         else:
             data_dir = os.path.join('./{}'.format(config.checkpoint_dir), "test.h5")
 
+        # get the training data's input and ground truths
         train_data, train_ground_truth = read_data(data_dir)
 
+        # set the optimizer
         self.training_optimizer = tf.train.GradientDescentOptimizer(config.learning_rate).minimize(self.loss)
 
         tf.global_variables_initializer().run()
@@ -91,11 +100,13 @@ class srcnn:
         num_iteration = 0
         start_time = time.time()
 
+        # try to load the pre-trained model
         if self.load(self.checkpoint_dir):
             print("Load successfully!")
         else:
             print("!!! NO FILES FOR LOADING !!!")
 
+        # training mode
         if config.is_train:
             print("TRAINING ... ...")
 
@@ -119,7 +130,7 @@ class srcnn:
 
                     if num_iteration % 500 == 0:
                         self.save(config.checkpoint_dir, num_iteration)
-
+        # testing mode
         else:
             print("TESTING ... ...")
             result = self.model.eval({self.input_images: train_data, self.ground_truths: train_ground_truth})
