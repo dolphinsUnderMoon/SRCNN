@@ -15,10 +15,6 @@ import numpy as np
 
 import tensorflow as tf
 
-try:
-    xrange
-except:
-    xrange = range
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -143,7 +139,7 @@ def input_setup(sess, config):
     padding = abs(config.input_image_size - config.ground_truth_size) / 2  # 6
 
     if config.is_train:
-        for i in xrange(len(data)):
+        for i in range(len(data)):
             input_, label_ = preprocess(data[i], config.scale)
 
             if len(input_.shape) == 3:

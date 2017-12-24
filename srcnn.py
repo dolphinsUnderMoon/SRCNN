@@ -3,11 +3,6 @@ import os
 import time
 import tensorflow as tf
 
-try:
-    xrange
-except:
-    xrange = range
-
 
 class srcnn:
     def __init__(self,
@@ -110,9 +105,9 @@ class srcnn:
         if config.is_train:
             print("TRAINING ... ...")
 
-            for epoch in xrange(config.epoch):
+            for epoch in range(config.epoch):
                 batch_indices = len(train_data) // config.batch_size
-                for index in xrange(0, batch_indices):
+                for index in range(0, batch_indices):
                     start = index * config.batch_size
                     end = (index+1) * config.batch_size
                     batch_images = train_data[start: end]
